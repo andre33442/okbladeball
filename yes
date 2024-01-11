@@ -1,128 +1,44 @@
--- BladeBallScript with Draggable and Minimizable UI (Roblox Lua)
+-- AutoParryScript (Roblox Lua)
 
-local player1 = { x = 100, y = 100, radius = 20 }
-local bladeBall = Instance.new("Part")
-bladeBall.Position = Vector3.new(400, 300, 0)
-bladeBall.Size = Vector3.new(10, 10, 10)
-bladeBall.Anchored = true
-bladeBall.CanCollide = false
-bladeBall.Name = "BladeBall"
-bladeBall.Parent = workspace
+-- Define the parry distance
+local parryDistance = 20  -- Adjust this distance as needed
 
-local spamming, autoparry = true, false
-local spamRate, parryRate = 0.1, 0.5
-local backupDistance, hitDistance = 80, 50
-local bladeBallSpeed = 100
-
-local timeSinceLastSpam, timeSinceLastParry = 0, 0
-
-local function calculateDistance(obj1, obj2)
-    return (obj1.Position - obj2.Position).Magnitude
+-- Function to find the ParryTool in the player's Backpack
+local function findParryTool(player)
+    local backpack = player.Backpack
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name == "ParryTool" then
+            return tool
+        end
+    end
+    return nil
 end
 
-local function checkProximity()
-    local distance = calculateDistance(bladeBall, player1)
-    local ballProximityThreshold = 30
+-- Function to check the ball's proximity and automatically parry
+local function autoParry()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    local ball = workspace.BladeBall  -- Assuming the ball's name is "BladeBall"
 
-    if distance < ballProximityThreshold then
-        simulateSpam()
-        simulateAutoparry()
-    else
-        local playerDistance = calculateDistance(player1, bladeBall)
-        spamming, autoparry = not (distance > backupDistance or playerDistance > backupDistance), not (distance > backupDistance or playerDistance > backupDistance)
+    if character and ball then
+        local ballPosition = ball.Position
+        local playerPosition = character.HumanoidRootPart.Position
+        local distance = (ballPosition - playerPosition).Magnitude
+
+        if distance < parryDistance then
+            local parryTool = findParryTool(player)
+
+            if parryTool then
+                -- You can customize this part based on how your ParryTool works
+                player.Character:FindFirstChildOfClass("Humanoid"):EquipTool(parryTool)
+                wait(0.1)  -- Adjust this wait time based on the ParryTool's activation time
+                player.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
+            else
+                warn("ParryTool not found in Backpack!")
+            end
+        end
     end
 end
 
-local function moveBladeBallTowardsPlayer(dt)
-    local direction = (player1.Position - bladeBall.Position).unit
-    bladeBall.Position = bladeBall.Position + direction * bladeBallSpeed * dt
-end
-
-local function checkBladeBallApproaching()
-    local distance = calculateDistance(bladeBall, player1)
-    local direction = (player1.Position - bladeBall.Position).unit
-    local ballApproaching = direction:Dot(bladeBall.Velocity.unit) > 0
-
-    if ballApproaching and distance < hitDistance then
-        simulateHit()
-    end
-end
-
-local function simulateSpam()
-    timeSinceLastSpam = timeSinceLastSpam + wait()
-
-    if timeSinceLastSpam >= spamRate then
-        print("Automatically spamming!")
-        timeSinceLastSpam = 0
-    end
-end
-
-local function simulateAutoparry()
-    timeSinceLastParry = timeSinceLastParry + wait()
-
-    if timeSinceLastParry >= parryRate then
-        print("Automatically parrying!")
-        timeSinceLastParry = 0
-    end
-end
-
-local function simulateHit()
-    print("Automatically hitting blade ball!")
-end
-
--- Create a draggable and minimizable UI
-local player = game.Players.LocalPlayer
-local mouse = player:GetMouse()
-local playerUI = Instance.new("ScreenGui")
-playerUI.Parent = player.PlayerGui
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(0, 10, 0, 10)
-frame.Parent = playerUI
-frame.Draggable = true  -- Make the frame draggable
-
--- Minimize button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Size = UDim2.new(0, 30, 0, 30)
-minimizeButton.Position = UDim2.new(1, -30, 0, 0)
-minimizeButton.Parent = frame
-minimizeButton.Text = "-"
-minimizeButton.TextSize = 20
-minimizeButton.MouseButton1Click:Connect(function()
-    frame.Size = UDim2.new(0, 100, 0, 30)
-    minimizeButton.Text = "+"
-end)
-
-local proximityLabel = Instance.new("TextLabel")
-proximityLabel.Size = UDim2.new(1, 0, 0.25, 0)
-proximityLabel.Text = "Player Proximity: "
-proximityLabel.Parent = frame
-
-local autoparryLabel = Instance.new("TextLabel")
-autoparryLabel.Size = UDim2.new(1, 0, 0.25, 0)
-autoparryLabel.Position = UDim2.new(0, 0, 0.25, 0)
-autoparryLabel.Text = "Autoparry Active: "
-autoparryLabel.Parent = frame
-
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(1, 0, 0.25, 0)
-speedLabel.Position = UDim2.new(0, 0, 0.5, 0)
-speedLabel.Text = "Blade Ball Speed: "
-speedLabel.Parent = frame
-
-local function updateUI()
-    proximityLabel.Text = "Player Proximity: " .. tostring(spamming)
-    autoparryLabel.Text = "Autoparry Active: " .. tostring(autoparry)
-    speedLabel.Text = "Blade Ball Speed: " .. tostring(bladeBallSpeed)
-end
-
-game:GetService("RunService").Heartbeat:Connect(function(dt)
-    checkProximity()
-    moveBladeBallTowardsPlayer(dt)
-    checkBladeBallApproaching()
-    updateUI()
-end)
-
--- Rest of the code remains unchanged
-
+-- Connect the autoParry function to the Heartbeat event
+game:GetService("RunService").Heartbeat:Connect(autoParry)
