@@ -1,0 +1,109 @@
+-- BladeBallScript (Roblox Lua)
+
+local player1 = { x = 100, y = 100, radius = 20 }
+local bladeBall = Instance.new("Part")
+bladeBall.Position = Vector3.new(400, 300, 0)
+bladeBall.Size = Vector3.new(10, 10, 10)
+bladeBall.Anchored = true
+bladeBall.CanCollide = false
+bladeBall.Name = "BladeBall"
+bladeBall.Parent = workspace
+
+local spamming, autoparry = true, false
+local spamRate, parryRate = 0.1, 0.5
+local backupDistance, hitDistance = 80, 50
+local bladeBallSpeed = 100  -- Set the initial speed of the blade ball
+
+local timeSinceLastSpam, timeSinceLastParry = 0, 0
+
+local function calculateDistance(obj1, obj2)
+    return (obj1.Position - obj2.Position).Magnitude
+end
+
+local function checkProximity()
+    local distance = calculateDistance(bladeBall, player1)
+    local ballProximityThreshold = 30
+
+    if distance < ballProximityThreshold then
+        simulateSpam()
+        simulateAutoparry()
+    else
+        local playerDistance = calculateDistance(player1, bladeBall)
+        spamming, autoparry = not (distance > backupDistance or playerDistance > backupDistance), not (distance > backupDistance or playerDistance > backupDistance)
+    end
+end
+
+local function moveBladeBallTowardsPlayer(dt)
+    local direction = (player1.Position - bladeBall.Position).unit
+    bladeBall.Position = bladeBall.Position + direction * bladeBallSpeed * dt
+end
+
+local function checkBladeBallApproaching()
+    local distance = calculateDistance(bladeBall, player1)
+    local direction = (player1.Position - bladeBall.Position).unit
+    local ballApproaching = direction:Dot(bladeBall.Velocity.unit) > 0
+
+    if ballApproaching and distance < hitDistance then
+        simulateHit()
+    end
+end
+
+local function simulateSpam()
+    timeSinceLastSpam = timeSinceLastSpam + wait()
+
+    if timeSinceLastSpam >= spamRate then
+        print("Automatically spamming!")
+        timeSinceLastSpam = 0
+    end
+end
+
+local function simulateAutoparry()
+    timeSinceLastParry = timeSinceLastParry + wait()
+
+    if timeSinceLastParry >= parryRate then
+        print("Automatically parrying!")
+        timeSinceLastParry = 0
+    end
+end
+
+local function simulateHit()
+    print("Automatically hitting blade ball!")
+end
+
+game:GetService("RunService").Heartbeat:Connect(function(dt)
+    checkProximity()
+    moveBladeBallTowardsPlayer(dt)
+    checkBladeBallApproaching()
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    -- You can add rendering logic here if needed
+end)
+
+-- Additional features:
+
+-- Function to increase the blade ball speed over time
+local function increaseSpeedOverTime()
+    bladeBallSpeed = bladeBallSpeed + 1
+end
+
+-- Function to reset the blade ball speed
+local function resetBladeBallSpeed()
+    bladeBallSpeed = 100
+end
+
+-- Connect the speed increase function to a timer (e.g., every 5 seconds)
+game:GetService("RunService").Stepped:Connect(function()
+    if tick() % 5 == 0 then
+        increaseSpeedOverTime()
+    end
+end)
+
+-- Connect the speed reset function to a timer (e.g., every 30 seconds)
+game:GetService("RunService").Stepped:Connect(function()
+    if tick() % 30 == 0 then
+        resetBladeBallSpeed()
+    end
+end)
+
+-- You can add more features, like scoring, UI, or custom events based on your game requirements.
