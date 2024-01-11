@@ -1,25 +1,32 @@
--- Blade Ball Autoparry Script
+function autoParry()
+    -- Insert your logic here to detect the ball's trajectory and player's position
+    local ballPosition = getBallPosition()
+    local playerPosition = getPlayerPosition()
 
--- Get the local player
-local player = game.Players.LocalPlayer
-
--- Connect a function to be executed each frame
-game:GetService("RunService").RenderStepped:Connect(function()
-    -- Check if the player exists and is in the game
-    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-        -- Find the ball in the workspace
-        local ball = game.Workspace:FindFirstChild("Ball")
-        
-        -- Check if the ball exists
-        if ball then
-            -- Calculate the direction from the player to the ball
-            local direction = (ball.Position - player.Character.HumanoidRootPart.Position).unit
-            
-            -- Define the force to hit the ball
-            local hitForce = direction * 50
-            
-            -- Apply force to hit the ball in the calculated direction
-            ball:ApplyImpulse(hitForce)
-        end
+    -- Implement your parry algorithm based on the positions
+    if ballPosition.x > playerPosition.x then
+        -- Auto parry to the right
+        performParry("right")
+    else
+        -- Auto parry to the left
+        performParry("left")
     end
-end)
+end
+
+function getBallPosition()
+    -- Replace with the actual function to get the ball's position
+    return {x = 0, y = 0}
+end
+
+function getPlayerPosition()
+    -- Replace with the actual function to get the player's position
+    return {x = 0, y = 0}
+end
+
+function performParry(direction)
+    -- Replace with the code to trigger the parry in the specified direction
+    print("Auto parry to the " .. direction)
+end
+
+-- Example usage
+autoParry()
