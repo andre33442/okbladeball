@@ -1,4 +1,4 @@
--- BladeBallScript (Roblox Lua)
+-- BladeBallScript with Draggable and Minimizable UI (Roblox Lua)
 
 local player1 = { x = 100, y = 100, radius = 20 }
 local bladeBall = Instance.new("Part")
@@ -12,7 +12,7 @@ bladeBall.Parent = workspace
 local spamming, autoparry = true, false
 local spamRate, parryRate = 0.1, 0.5
 local backupDistance, hitDistance = 80, 50
-local bladeBallSpeed = 100  -- Set the initial speed of the blade ball
+local bladeBallSpeed = 100
 
 local timeSinceLastSpam, timeSinceLastParry = 0, 0
 
@@ -70,40 +70,59 @@ local function simulateHit()
     print("Automatically hitting blade ball!")
 end
 
+-- Create a draggable and minimizable UI
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local playerUI = Instance.new("ScreenGui")
+playerUI.Parent = player.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.Parent = playerUI
+frame.Draggable = true  -- Make the frame draggable
+
+-- Minimize button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -30, 0, 0)
+minimizeButton.Parent = frame
+minimizeButton.Text = "-"
+minimizeButton.TextSize = 20
+minimizeButton.MouseButton1Click:Connect(function()
+    frame.Size = UDim2.new(0, 100, 0, 30)
+    minimizeButton.Text = "+"
+end)
+
+local proximityLabel = Instance.new("TextLabel")
+proximityLabel.Size = UDim2.new(1, 0, 0.25, 0)
+proximityLabel.Text = "Player Proximity: "
+proximityLabel.Parent = frame
+
+local autoparryLabel = Instance.new("TextLabel")
+autoparryLabel.Size = UDim2.new(1, 0, 0.25, 0)
+autoparryLabel.Position = UDim2.new(0, 0, 0.25, 0)
+autoparryLabel.Text = "Autoparry Active: "
+autoparryLabel.Parent = frame
+
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(1, 0, 0.25, 0)
+speedLabel.Position = UDim2.new(0, 0, 0.5, 0)
+speedLabel.Text = "Blade Ball Speed: "
+speedLabel.Parent = frame
+
+local function updateUI()
+    proximityLabel.Text = "Player Proximity: " .. tostring(spamming)
+    autoparryLabel.Text = "Autoparry Active: " .. tostring(autoparry)
+    speedLabel.Text = "Blade Ball Speed: " .. tostring(bladeBallSpeed)
+end
+
 game:GetService("RunService").Heartbeat:Connect(function(dt)
     checkProximity()
     moveBladeBallTowardsPlayer(dt)
     checkBladeBallApproaching()
+    updateUI()
 end)
 
-game:GetService("RunService").RenderStepped:Connect(function()
-    -- You can add rendering logic here if needed
-end)
+-- Rest of the code remains unchanged
 
--- Additional features:
-
--- Function to increase the blade ball speed over time
-local function increaseSpeedOverTime()
-    bladeBallSpeed = bladeBallSpeed + 1
-end
-
--- Function to reset the blade ball speed
-local function resetBladeBallSpeed()
-    bladeBallSpeed = 100
-end
-
--- Connect the speed increase function to a timer (e.g., every 5 seconds)
-game:GetService("RunService").Stepped:Connect(function()
-    if tick() % 5 == 0 then
-        increaseSpeedOverTime()
-    end
-end)
-
--- Connect the speed reset function to a timer (e.g., every 30 seconds)
-game:GetService("RunService").Stepped:Connect(function()
-    if tick() % 30 == 0 then
-        resetBladeBallSpeed()
-    end
-end)
-
--- You can add more features, like scoring, UI, or custom events based on your game requirements.
