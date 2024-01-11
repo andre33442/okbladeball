@@ -1,13 +1,7 @@
 -- BladeBallScript (Roblox Lua)
 
 local player = game.Players.LocalPlayer
-local bladeBall = Instance.new("Part")
-bladeBall.Position = Vector3.new(0, 5, 0)  -- Initial position
-bladeBall.Size = Vector3.new(5, 5, 5)  -- Adjust the size as needed
-bladeBall.Anchored = true
-bladeBall.CanCollide = false
-bladeBall.Name = "BladeBall"
-bladeBall.Parent = workspace
+local bladeBall = workspace:WaitForChild("BladeBall")  -- Make sure the part is named "BladeBall"
 
 local bladeBallSpeed = 20  -- Adjust the speed as needed
 local parryCooldown = 2  -- Adjust the cooldown time for parrying
@@ -45,10 +39,8 @@ game:GetService("RunService").Heartbeat:Connect(function(dt)
     moveBladeBallTowardsPlayer(dt)
 end)
 
--- Connect the parry function to a user input event (e.g., mouse click)
-local function onMouseClick()
+-- Automatically parry at regular intervals
+while wait(parryCooldown) do
     parryBladeBall()
 end
 
-mouse = player:GetMouse()
-mouse.Button1Down:Connect(onMouseClick)
