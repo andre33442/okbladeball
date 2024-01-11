@@ -1,46 +1,25 @@
--- BladeBallScript (Roblox Lua)
+-- Blade Ball Autoparry Script
 
+-- Get the local player
 local player = game.Players.LocalPlayer
-local bladeBall = workspace:WaitForChild("BladeBall")  -- Make sure the part is named "BladeBall"
 
-local bladeBallSpeed = 20  -- Adjust the speed as needed
-local parryCooldown = 2  -- Adjust the cooldown time for parrying
-
-local canParry = true
-
-local function moveBladeBallTowardsPlayer(dt)
-    local playerPosition = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position
-
-    if playerPosition then
-        local direction = (playerPosition - bladeBall.Position).unit
-        bladeBall.Position = bladeBall.Position + direction * bladeBallSpeed * dt
-    end
-end
-
-local function parryBladeBall()
-    if canParry then
-        canParry = false
-
-        -- Customize this part based on how your ParryTool works
-        local parryTool = player.Backpack:FindFirstChild("ParryTool")
-
-        if parryTool and parryTool:IsA("Tool") then
-            player.Character:FindFirstChildOfClass("Humanoid"):EquipTool(parryTool)
-            wait(0.1)  -- Adjust this wait time based on the ParryTool's activation time
-            player.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
+-- Connect a function to be executed each frame
+game:GetService("RunService").RenderStepped:Connect(function()
+    -- Check if the player exists and is in the game
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        -- Find the ball in the workspace
+        local ball = game.Workspace:FindFirstChild("Ball")
+        
+        -- Check if the ball exists
+        if ball then
+            -- Calculate the direction from the player to the ball
+            local direction = (ball.Position - player.Character.HumanoidRootPart.Position).unit
+            
+            -- Define the force to hit the ball
+            local hitForce = direction * 50
+            
+            -- Apply force to hit the ball in the calculated direction
+            ball:ApplyImpulse(hitForce)
         end
-
-        wait(parryCooldown)
-        canParry = true
     end
-end
-
-game:GetService("RunService").Heartbeat:Connect(function(dt)
-    moveBladeBallTowardsPlayer(dt)
 end)
-
--- Automatically parry at regular intervals
-while wait(parryCooldown) do
-    parryBladeBall()
-end
-
