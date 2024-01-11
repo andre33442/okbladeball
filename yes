@@ -1,40 +1,53 @@
--- Advanced auto-parry script
-function autoParry()
-    local ballInfo = getBallInfo()
-    local playerInfo = getPlayerInfo()
+local LocalPlayer = game:GetService('Players').LocalPlayer
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
 
-    -- Implement a highly sophisticated parry algorithm
-    local ballVelocity = getBallVelocity()
-    local ballAcceleration = getBallAcceleration()
+local blade_ball_module = {}
 
-    local predictedPosition = predictBallPosition(ballInfo, 0.5)  -- Predict 0.5 seconds into the future
+local net = ReplicatedStorage.Packages._Index['sleitnick_net@0.1.0'].net
 
-    local distanceToPredicted = calculateDistance(playerInfo.position, predictedPosition)
-    local timeToImpactPredicted = distanceToPredicted / calculateSpeed(ballVelocity)
+local parry_attempt = ReplicatedStorage.Remotes.ParryAttempt
+local parry_button_press = ReplicatedStorage.Remotes.ParryButtonPress
+local ability_button_press = ReplicatedStorage.Remotes.AbilityButtonPress
 
-    if timeToImpactPredicted < 0.5 then
-        -- Advanced predictive auto-parry based on predicted ball position
-        performAdvancedPredictiveParry(ballVelocity, ballAcceleration, "both")
-    else
-        -- Reactive auto-parry based on current positions
-        if ballInfo.position.x > playerInfo.position.x then
-            performParry("right")
-        else
-            performParry("left")
+
+function blade_ball_module.get_ball(realball: boolean)
+    for , v in workspace.Balls:GetChildren() do
+        if v:GetAttribute('realBall') == real_ball then
+            return v
         end
     end
-
-    -- Additional advanced parry features and optimizations
-    performDynamicParryAdjustment(playerInfo, ballInfo)
-    performIntelligentTimingAdjustment(timeToImpactPredicted)
-    performOptimizedReactionSpeedCalculation(ballVelocity)
-    performAdaptiveAccelerationControl(ballAcceleration)
-    performProactivePositionPrediction(ballInfo, playerInfo)
-    -- ... (continue with more advanced features)
-
 end
 
--- Extend the script with additional functions, features, and optimizations
 
--- Example usage
-autoParry()
+function blade_ball_module.parry(direction: Raycast, external: boolean)
+    if external then
+        parry_attempt:FireServer(unpack({
+            [1] = 0.5,
+            [2] = CFrame.new(Vector3.zero, Vector3.zero),
+            [3] = {
+                ["Player_0"] = Vector3.zero
+            },
+            [4] = {
+                [1] = 0,
+                [2] = 0
+            }
+        }))
+    else
+        parry_button_press:Fire()
+    end
+end
+
+
+function blade_ball_module.ability()
+    ability_button_press:Fire()
+end
+
+
+function blade_ball_module.claim_playtimerewards()
+    for  = 1, 6 do
+        net['RF/ClaimPlaytimeReward']:InvokeServer(_)
+    end
+end
+
+
+return blade_ball_module
