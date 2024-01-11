@@ -1,44 +1,54 @@
--- AutoParryScript (Roblox Lua)
+-- BladeBallScript (Roblox Lua)
 
--- Define the parry distance
-local parryDistance = 20  -- Adjust this distance as needed
+local player = game.Players.LocalPlayer
+local bladeBall = Instance.new("Part")
+bladeBall.Position = Vector3.new(0, 5, 0)  -- Initial position
+bladeBall.Size = Vector3.new(5, 5, 5)  -- Adjust the size as needed
+bladeBall.Anchored = true
+bladeBall.CanCollide = false
+bladeBall.Name = "BladeBall"
+bladeBall.Parent = workspace
 
--- Function to find the ParryTool in the player's Backpack
-local function findParryTool(player)
-    local backpack = player.Backpack
-    for _, tool in pairs(backpack:GetChildren()) do
-        if tool:IsA("Tool") and tool.Name == "ParryTool" then
-            return tool
-        end
-    end
-    return nil
-end
+local bladeBallSpeed = 20  -- Adjust the speed as needed
+local parryCooldown = 2  -- Adjust the cooldown time for parrying
 
--- Function to check the ball's proximity and automatically parry
-local function autoParry()
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    local ball = workspace.BladeBall  -- Assuming the ball's name is "BladeBall"
+local canParry = true
 
-    if character and ball then
-        local ballPosition = ball.Position
-        local playerPosition = character.HumanoidRootPart.Position
-        local distance = (ballPosition - playerPosition).Magnitude
+local function moveBladeBallTowardsPlayer(dt)
+    local playerPosition = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position
 
-        if distance < parryDistance then
-            local parryTool = findParryTool(player)
-
-            if parryTool then
-                -- You can customize this part based on how your ParryTool works
-                player.Character:FindFirstChildOfClass("Humanoid"):EquipTool(parryTool)
-                wait(0.1)  -- Adjust this wait time based on the ParryTool's activation time
-                player.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
-            else
-                warn("ParryTool not found in Backpack!")
-            end
-        end
+    if playerPosition then
+        local direction = (playerPosition - bladeBall.Position).unit
+        bladeBall.Position = bladeBall.Position + direction * bladeBallSpeed * dt
     end
 end
 
--- Connect the autoParry function to the Heartbeat event
-game:GetService("RunService").Heartbeat:Connect(autoParry)
+local function parryBladeBall()
+    if canParry then
+        canParry = false
+
+        -- Customize this part based on how your ParryTool works
+        local parryTool = player.Backpack:FindFirstChild("ParryTool")
+
+        if parryTool and parryTool:IsA("Tool") then
+            player.Character:FindFirstChildOfClass("Humanoid"):EquipTool(parryTool)
+            wait(0.1)  -- Adjust this wait time based on the ParryTool's activation time
+            player.Character:FindFirstChildOfClass("Humanoid"):UnequipTools()
+        end
+
+        wait(parryCooldown)
+        canParry = true
+    end
+end
+
+game:GetService("RunService").Heartbeat:Connect(function(dt)
+    moveBladeBallTowardsPlayer(dt)
+end)
+
+-- Connect the parry function to a user input event (e.g., mouse click)
+local function onMouseClick()
+    parryBladeBall()
+end
+
+mouse = player:GetMouse()
+mouse.Button1Down:Connect(onMouseClick)
