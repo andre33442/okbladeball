@@ -9,45 +9,35 @@ local parry_attempt = ReplicatedStorage.Remotes.ParryAttempt
 local parry_button_press = ReplicatedStorage.Remotes.ParryButtonPress
 local ability_button_press = ReplicatedStorage.Remotes.AbilityButtonPress
 
-
-function blade_ball_module.get_ball(realball: boolean)
-    for , v in workspace.Balls:GetChildren() do
-        if v:GetAttribute('realBall') == real_ball then
+function blade_ball_module.get_ball(realBall)
+    for _, v in pairs(workspace.Balls:GetChildren()) do
+        if v:GetAttribute('realBall') == realBall then
             return v
         end
     end
 end
 
-
-function blade_ball_module.parry(direction: Raycast, external: boolean)
+function blade_ball_module.parry(direction, external)
     if external then
-        parry_attempt:FireServer(unpack({
+        parry_attempt:FireServer({
             [1] = 0.5,
             [2] = CFrame.new(Vector3.zero, Vector3.zero),
-            [3] = {
-                ["Player_0"] = Vector3.zero
-            },
-            [4] = {
-                [1] = 0,
-                [2] = 0
-            }
-        }))
+            [3] = { ["Player_0"] = Vector3.zero },
+            [4] = { [1] = 0, [2] = 0 }
+        })
     else
         parry_button_press:Fire()
     end
 end
 
-
 function blade_ball_module.ability()
     ability_button_press:Fire()
 end
 
-
-function blade_ball_module.claim_playtimerewards()
-    for  = 1, 6 do
-        net['RF/ClaimPlaytimeReward']:InvokeServer(_)
+function blade_ball_module.claim_playtime_rewards()
+    for _ = 1, 6 do
+        net['RF/ClaimPlaytimeReward']:InvokeServer()
     end
 end
-
 
 return blade_ball_module
